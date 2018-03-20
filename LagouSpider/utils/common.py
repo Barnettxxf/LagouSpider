@@ -19,3 +19,5 @@ class MysqlConnection(object):
     def close(self):
         self.cursor.close()
         self.conn.close()
+
+

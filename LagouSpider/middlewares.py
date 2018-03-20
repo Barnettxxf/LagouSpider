@@ -5,9 +5,8 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 import json
-
 from scrapy import signals
-from selenium import webdriver
+from scrapy.downloadermiddlewares.cookies import CookiesMiddleware
 import random
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from LagouSpider.utils.get_ip import GetIp
@@ -15,95 +14,33 @@ from twisted.internet.error import TimeoutError
 
 t = GetIp()
 
-class LagouspiderSpiderMiddleware(object):
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_spider_input(self, response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
-
-        # Should return None or raise an exception.
-        print(response.url)
-        return None
-
-    def process_spider_output(self, response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
-
-        # Must return an iterable of Request, dict or Item objects.
-        for i in result:
-            yield i
-
-    def process_spider_exception(self, response, exception, spider):
-        pass
-
-    def process_start_requests(self, start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
-
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
-
 
 class LagouspiderDownloaderMiddleware(object):
-    def __init__(self):
-        self.driver = webdriver.PhantomJS
-
     @classmethod
     def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
         return None
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
 
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
-
-        try:
-            request.meta.get('interview', '')
-            return request
-        except:
-            pass
+        interview = request.meta.get('interview', '')
+        if interview:
+            return response
 
         try:
             content = json.loads(response.text)
             if content['success'] is False:
                 print('返回数据不对，重新请求')
+                print('返回内容', content)
                 return request
         except:
             print('返回数据不对，重新请求')
+            print('返回内容', response)
             return request
 
         if response.status == 403:
@@ -112,23 +49,13 @@ class LagouspiderDownloaderMiddleware(object):
         return response
 
     def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
-
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_excepti on() chain
-        if exception == TimeoutError:
             return request
-
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
 
     def spider_closed(self, spider):
         spider.logger.info('Spider closed: %s' % spider.name)
-        self.driver.quit()
 
 
 class RotateUserAgentMiddleware(UserAgentMiddleware):
@@ -189,3 +116,26 @@ class RandomProxyMiddleware(object):
         spider.logger.info('Spider closed: %s' % spider.name)
 
 
+class LagouCookiesMiddleware(object):
+
+    cookies = {'user_trace_token': '20180226001828-5c601f0f-6537-44be-a9c9-c1c381f97c3f',
+               '_ga': 'GA1.2.1250218167.1519575509',
+               'LGUID': '20180226001829-83f7b1fb-1a47-11e8-917d-525400f775ce',
+               'index_location_city': '%E6%B7%B1%E5%9C%B3',
+               'JSESSIONID': 'ABAAABAAAIAACBI0F6208F8F96C4F25F0401ABC9F24BABC',
+               'hideSliderBanner20180305WithTopBannerC': '1',
+               '_gid': 'GA1.2.2062001429.1521558973',
+               '_gat': '1',
+               'LGSID': '20180320231612-a050094e-2c51-11e8-914f-525400f775ce',
+               'PRE_UTM': '',
+               'PRE_HOST': '',
+               'PRE_SITE': '',
+               'PRE_LAND': 'https%3A%2F%2Fwww.lagou.com%2F',
+               'LGRID': '20180320231612-a0500a4f-2c51-11e8-914f-525400f775ce',
+               'Hm_lvt_4233e74dff0ae5bd0a3d81c6ccf756e6': '1520935912,1521373019,1521377635,1521558978',
+               'TG-TRACK-CODE': 'index_search',
+               'Hm_lpvt_4233e74dff0ae5bd0a3d81c6ccf756e6': '1521559012',
+               'SEARCH_ID': '6cff551f6f6c41f49b8b6bfd8357e21f'}
+
+    def process_request(self, request, spider):
+        request.cookies = self.cookies

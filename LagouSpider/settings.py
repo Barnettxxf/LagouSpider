@@ -46,7 +46,7 @@ DOWNLOAD_TIMEOUT = 30
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -68,8 +68,10 @@ COOKIES_ENABLED = False
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
     'LagouSpider.middlewares.RotateUserAgentMiddleware': 400,
-    'LagouSpider.middlewares.LagouspiderSpiderMiddleware': 751,
+    'LagouSpider.middlewares.LagouCookiesMiddleware': 700,
+    'LagouSpider.middlewares.LagouspiderDownloaderMiddleware': 751,
     'LagouSpider.middlewares.RandomProxyMiddleware': 750,
 }
 # SPLASH_URL = 'http://localhost:8050'
@@ -77,17 +79,17 @@ DOWNLOADER_MIDDLEWARES = {
 # HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'LagouSpider.pipelines.MysqlPipline': 300,
-   # 'LagouSpider.pipelines.MysqlTwistedPipline': 301,
+   # 'LagouSpider.pipelines.MysqlPipline': 300,
+   'LagouSpider.pipelines.MysqlTwistedPipline': 300,
 }
-HTTPERROR_ALLOWED_CODES = [403]
+
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
@@ -109,7 +111,11 @@ AUTOTHROTTLE_DEBUG = True
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+RETRY_ENABLED = True
+RETRY_TIMES = 3
 
-LOG_FILE='lagou.log'
+HTTPERROR_ALLOWED_CODES = [403]
+
+# LOG_FILE='lagou.log'
 
 
