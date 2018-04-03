@@ -4,8 +4,12 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import pymongo
 import pymysql
 from twisted.enterprise import adbapi
+
+from LagouSpider.items import LagouspiderItem, LagouInterviewItem
+
 
 class LagouspiderPipeline(object):
     def process_items(self, item, spider):
@@ -63,3 +67,30 @@ class MysqlPipline(object):
 
     def close_spider(self, spider):
         self.close()
+
+
+class MongoPipline(object):
+
+    conn = pymongo.MongoClient()
+
+    def __init__(self):
+
+        self.db = self.conn['lagou']
+
+    def process_item(self, item, spider):
+        if isinstance(item, LagouspiderItem):
+            collection = self.db['lagoujob']
+            self.insert(item, collection)
+        else:
+            collection = self.db['lagouinterviewcomment']
+            self.insert(item, collection)
+
+    def insert(self, item, collection):
+        data = {}
+        for key in item:
+            data.setdefault(key, item[key])
+        collection.insert_one(data)
+
+    def closed_spider(self, spider):
+        self.conn.close()
+

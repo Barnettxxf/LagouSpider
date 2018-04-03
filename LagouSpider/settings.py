@@ -73,6 +73,7 @@ DOWNLOADER_MIDDLEWARES = {
     'LagouSpider.middlewares.LagouCookiesMiddleware': 700,
     'LagouSpider.middlewares.LagouspiderDownloaderMiddleware': 751,
     'LagouSpider.middlewares.RandomProxyMiddleware': 750,
+    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 760,
 }
 # SPLASH_URL = 'http://localhost:8050'
 # DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
@@ -87,7 +88,8 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'LagouSpider.pipelines.MysqlPipline': 300,
-   'LagouSpider.pipelines.MysqlTwistedPipline': 300,
+   # 'LagouSpider.pipelines.MysqlTwistedPipline': 300,
+   'LagouSpider.pipelines.MongoPipline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
